@@ -1,9 +1,91 @@
 {
-  "name": "Minimal Devcontainer",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "name": "Minimal Developer Environment - DataOps",
+  "image": "mcr.microsoft.com/devcontainers/base:alpine-3.19",
+  
+  "features": {
+    // Python 3.12 - Data processing core (~50MB)
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12",
+      "installTools": false
+    },
+    // Node.js 20 LTS - Tooling & APIs (~80MB)
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20",
+      "nodeGypDependencies": false
+    },
+    // PowerShell - Cross-platform scripting (~60MB)
+    "ghcr.io/devcontainers/features/powershell:1": {
+      "version": "latest"
+    },
+    // Docker-in-Docker - For containerized pipelines (~100MB)
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    },
+    // GitHub CLI - CI/CD workflows
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    }
+  },
+  
+  // Install DataOps tools, DB clients, and data format libraries
+  "postCreateCommand": "sh .devcontainer/setup.sh",
+  
+  // Run as custom user 'tmj' (not root)
+  "remoteUser": "tmj",
+  "containerUser": "tmj",
+  
+  // Mount settings for better performance and security
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/tmj/.ssh,readonly,type=bind,consistency=cached"
+  ],
+  
   "customizations": {
     "vscode": {
-      "extensions": []
+      "extensions": [
+        // Python - Core
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        // JavaScript/Node.js
+        "dbaeumer.vscode-eslint",
+        // Data formats & visualization
+        "evidence.evidence-vscode",
+        "RandomFractalsInc.vscode-data-preview",
+        "mechatroner.rainbow-csv",
+        // Docker & containers
+        "ms-azuretools.vscode-docker",
+        // GitHub
+        "github.vscode-pull-request-github",
+        // Formatting
+        "esbenp.prettier-vscode",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.provider": "black",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+        "files.eol": "\n",
+        "files.trimTrailingWhitespace": true,
+        "files.associations": {
+          "*.parquet": "text",
+          "*.delta": "text"
+        }
+      }
     }
+  },
+  
+  // Environment variables for DataOps
+  "containerEnv": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUNBUFFERED": "1",
+    "NODE_ENV": "development",
+    "DATA_PATH": "/workspace/data",
+    "DOCKER_BUILDKIT": "1"
   }
 }
