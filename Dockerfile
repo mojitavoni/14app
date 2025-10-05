@@ -40,12 +40,13 @@ RUN apk add --no-cache \
     shadow
 
 # Install Python 3.12 and pip
+# Use --break-system-packages to allow pip upgrades (safe in container)
 RUN apk add --no-cache python3 py3-pip && \
-    python3 -m ensurepip && \
-    pip3 install --upgrade pip setuptools wheel
+    pip3 install --break-system-packages --upgrade pip setuptools wheel
 
-# Install Node.js 20 LTS
-RUN apk add --no-cache nodejs npm
+# Install Node.js 20 LTS and npm
+RUN apk add --no-cache nodejs npm && \
+    npm install -g npm@latest 2>/dev/null || true
 
 # Install PowerShell
 RUN apk add --no-cache \
@@ -79,8 +80,8 @@ RUN wget -q https://github.com/duckdb/duckdb/releases/latest/download/duckdb_cli
     chmod +x /usr/local/bin/duckdb && \
     rm duckdb_cli-linux-amd64.zip
 
-# Install Python packages for DataOps
-RUN pip3 install --no-cache-dir \
+# Install Python DataOps packages
+RUN pip3 install --break-system-packages --no-cache-dir \
     # Core data processing
     duckdb==0.10.0 \
     pandas==2.2.0 \
