@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  dataops:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dataops-env:latest
+    container_name: dataops-dev
+    
+    # Run as tmj user
+    user: tmj
+    
+    # Working directory
+    working_dir: /workspace
+    
+    # Mount current directory
+    volumes:
+      - .:/workspace
+      - dataops-data:/workspace/data
+      # Optional: Mount SSH keys (readonly)
+      - ${HOME}/.ssh:/home/tmj/.ssh:ro
+    
+    # Environment variables
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      - NODE_ENV=development
+      - DATA_PATH=/workspace/data
+      - DUCKDB_MEMORY_LIMIT=4GB
+    
+    # Keep container running
+    command: sleep infinity
+    
+    # Networking
+    networks:
+      - dataops-network
+    
+    # Resource limits (adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 2G
+
+# Named volumes for data persistence
+volumes:
+  dataops-data:
+    driver: local
+
+# Network
+networks:
+  dataops-network:
+    driver: bridge

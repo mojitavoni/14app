@@ -1,0 +1,126 @@
+{
+  "name": "Minimal Developer Environment - DataOps",
+  
+  // Use pre-built image (build it first with: docker build -t dataops-env:latest .)
+  "image": "dataops-env:latest",
+  
+  // Or use docker-compose (recommended for local dev)
+  // "dockerComposeFile": "../docker-compose.yml",
+  // "service": "dataops",
+  // "workspaceFolder": "/workspace",
+  
+  // Run as tmj user
+  "remoteUser": "tmj",
+  "containerUser": "tmj",
+  
+  // Mount SSH keys for Git authentication
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/tmj/.ssh,readonly,type=bind,consistency=cached"
+  ],
+  
+  // Port forwarding (add as needed)
+  "forwardPorts": [
+    8000,  // Common dev server
+    8080,  // Alternative dev server
+    5432,  // PostgreSQL
+    3306   // MySQL
+  ],
+  
+  // VS Code customizations
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Python
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        
+        // JavaScript/Node.js
+        "dbaeumer.vscode-eslint",
+        
+        // Data formats & visualization
+        "evidence.evidence-vscode",
+        "RandomFractalsInc.vscode-data-preview",
+        "mechatroner.rainbow-csv",
+        
+        // Docker
+        "ms-azuretools.vscode-docker",
+        
+        // GitHub
+        "github.vscode-pull-request-github",
+        
+        // Formatting
+        "esbenp.prettier-vscode",
+        "redhat.vscode-yaml"
+      ],
+      
+      "settings": {
+        // Python
+        "python.defaultInterpreterPath": "/usr/local/bin/python3",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.provider": "black",
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+        
+        // JavaScript/Node.js
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        
+        // General editor
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": false,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "files.eol": "\n",
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        
+        // File associations for data formats
+        "files.associations": {
+          "*.parquet": "text",
+          "*.delta": "text",
+          "*.avro": "text",
+          "*.proto": "text"
+        },
+        
+        // Terminal
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          },
+          "sh": {
+            "path": "/bin/sh"
+          },
+          "pwsh": {
+            "path": "/usr/bin/pwsh"
+          }
+        }
+      }
+    }
+  },
+  
+  // Environment variables
+  "containerEnv": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUNBUFFERED": "1",
+    "NODE_ENV": "development",
+    "DATA_PATH": "/workspace/data",
+    "DUCKDB_MEMORY_LIMIT": "4GB"
+  },
+  
+  // Lifecycle scripts
+  "postCreateCommand": "echo '✅ DataOps environment ready!' && python3 --version && node --version && duckdb --version",
+  "postStartCommand": "echo '🚀 Container started as user: $(whoami)'"
+}
