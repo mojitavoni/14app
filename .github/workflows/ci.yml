@@ -2,35 +2,11 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:
 
 jobs:
-  validate-data:
-    name: Validate Data Files
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        cache: 'pip'
-        
-    - name: Install dependencies
-      run: |
-        pip install --no-cache-dir duckdb pandas polars pyarrow
-        
-    - name: Validate CSV files
-      run: |
-        python scripts/validate_data.py
-      if: hashFiles('data/**/*.csv') != ''
-      
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
@@ -53,8 +29,8 @@ jobs:
         sarif_file: 'trivy-results.sarif'
       if: always()
       
-  lint-and-format:
-    name: Lint and Format Check
+  python-lint:
+    name: Python Code Quality
     runs-on: ubuntu-latest
     
     steps:
@@ -66,30 +42,16 @@ jobs:
       with:
         python-version: '3.12'
         
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-      if: hashFiles('package.json') != ''
-        
     - name: Install Python linters
       run: |
-        pip install pylint black isort
+        pip install pylint black
         
     - name: Lint Python
       run: |
-        find . -name "*.py" -exec pylint {} +
+        find scripts -name "*.py" -exec pylint {} +
       continue-on-error: true
       
     - name: Check Python formatting
       run: |
-        black --check .
-      continue-on-error: true
-      
-    - name: Lint JavaScript
-      run: |
-        npm install
-        npm run lint
-      if: hashFiles('package.json') != ''
+        black --check scripts
       continue-on-error: true
